@@ -1,10 +1,16 @@
 [project]
-name = "apps-jugoya"
+name = "apps-jugoya-ai"
 version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
+    "black>=25.1.0",
+    "dj-database-url>=2.3.0",
     "django>=5.1.7",
+    "gunicorn>=23.0.0",
+    "psycopg2-binary>=2.9.10",
     "python-dotenv>=1.1.0",
+    "uvicorn>=0.34.0",
+    "whitenoise[brotli]>=6.9.0",
 ]
