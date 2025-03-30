@@ -1,6 +1,7 @@
 databases:
   - name: apps_jugoya_ai_db
     plan: free
+    region: singapore
     databaseName: apps_jugoya_ai
     user: apps_jugoya_ai
 
@@ -9,6 +10,7 @@ services:
     plan: free
     name: apps_jugoya_ai
     runtime: python
+    region: singapore
     buildCommand: "./build.sh"
     startCommand: "python -m gunicorn main.asgi:application -k uvicorn.workers.UvicornWorker"
     envVars:
