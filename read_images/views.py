@@ -1,5 +1,5 @@
 from django.shortcuts import render
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import permission_required
 import requests
 import dotenv
 import os
@@ -9,7 +9,7 @@ from django.http import JsonResponse, HttpResponseServerError
 dotenv.load_dotenv()
 
 
-@login_required(redirect_field_name="my_redirect_field")
+@permission_required("read_images.view_read_images")
 def index(request):
     """
     メインページを表示する
@@ -17,7 +17,7 @@ def index(request):
     return render(request, "read_images/index.html")
 
 
-@login_required()
+@permission_required("read_images.view_read_images")
 def query(request):
     """
     画像検索APIにクエリを送信し、結果をJSONで返す
@@ -86,7 +86,7 @@ def query(request):
     return JsonResponse(response_data)
 
 
-@login_required()
+@permission_required("read_images.view_read_images")
 def answer(request):
     """
     検索クエリと画像URLをもとにAIからの回答を取得する
