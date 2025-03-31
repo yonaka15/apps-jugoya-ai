@@ -9,7 +9,7 @@ from django.http import JsonResponse, HttpResponseServerError
 dotenv.load_dotenv()
 
 
-@permission_required("read_images.view_read_images")
+@permission_required("read_images.view_readimages")
 def index(request):
     """
     メインページを表示する
@@ -17,7 +17,7 @@ def index(request):
     return render(request, "read_images/index.html")
 
 
-@permission_required("read_images.view_read_images")
+@permission_required("read_images.view_readimages")
 def query(request):
     """
     画像検索APIにクエリを送信し、結果をJSONで返す
@@ -86,7 +86,7 @@ def query(request):
     return JsonResponse(response_data)
 
 
-@permission_required("read_images.view_read_images")
+@permission_required("read_images.view_readimages")
 def answer(request):
     """
     検索クエリと画像URLをもとにAIからの回答を取得する
