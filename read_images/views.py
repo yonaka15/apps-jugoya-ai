@@ -9,6 +9,7 @@ from django.http import JsonResponse, HttpResponseServerError
 dotenv.load_dotenv()
 
 
+@login_required(redirect_field_name="my_redirect_field")
 def index(request):
     """
     メインページを表示する
