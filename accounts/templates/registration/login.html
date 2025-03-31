@@ -1,0 +1,60 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ログイン | 画像検索システム</title>
+  <link rel="stylesheet" href="{% static 'accounts/css/auth.css' %}">
+</head>
+
+<body>
+  <div class="container">
+    <div class="auth-box">
+      <h1>画像検索システム</h1>
+      <h2>ログイン</h2>
+
+      {% if form.errors %}
+      <div class="error-message">
+        <p>ユーザー名とパスワードが一致しません。もう一度お試しください。</p>
+      </div>
+      {% endif %}
+
+      {% if next %}
+      {% if user.is_authenticated %}
+      <div class="info-message">
+        <p>このページにアクセスする権限がありません。適切な権限を持つアカウントでログインしてください。</p>
+      </div>
+      {% else %}
+      <div class="info-message">
+        <p>続行するにはログインしてください。</p>
+      </div>
+      {% endif %}
+      {% endif %}
+
+      <form method="post" action="{% url 'login' %}">
+        {% csrf_token %}
+        <div class="form-group">
+          <label for="id_username">ユーザー名:</label>
+          {{ form.username }}
+        </div>
+        <div class="form-group">
+          <label for="id_password">パスワード:</label>
+          {{ form.password }}
+        </div>
+        <div class="form-actions">
+          <button type="submit" class="primary-button">ログイン</button>
+          <input type="hidden" name="next" value="{{ next }}">
+        </div>
+      </form>
+
+      <div class="auth-links">
+        <p><a href="{% url 'password_reset' %}">パスワードをお忘れですか？</a></p>
+      </div>
+    </div>
+  </div>
+</body>
+
+</html>
+<!-- vim: set ft=htmldjango: -->

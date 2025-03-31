@@ -68,6 +68,7 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "read_images.apps.ReadImagesConfig",
+    "accounts.apps.AccountsConfig",
 ]
 
 MIDDLEWARE = [
@@ -164,3 +165,7 @@ if not DEBUG:
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+# 認証関連の設定
+LOGIN_REDIRECT_URL = "/read_images/"  # ログイン後のリダイレクト先
+LOGOUT_REDIRECT_URL = "/accounts/login/"  # ログアウト後のリダイレクト先
