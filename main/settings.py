@@ -68,6 +68,7 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "read_images.apps.ReadImagesConfig",
+    "emoji_finder.apps.EmojiFinderConfig",
     "accounts.apps.AccountsConfig",
 ]
 

@@ -1,5 +1,5 @@
 from django.db import models
 
 
-class ReadImages(models.Model):
+class App(models.Model):
     pass
