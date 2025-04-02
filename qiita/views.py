@@ -9,7 +9,6 @@ from django.http import JsonResponse, HttpResponseServerError
 dotenv.load_dotenv()
 
 
-@login_required
 def index(request):
     """
     メインページを表示する
@@ -17,7 +16,6 @@ def index(request):
     return render(request, "qiita/index.html")
 
 
-@login_required
 def query(request):
     """
     Qiita記事検索APIにクエリを送信し、結果をJSONで返す
