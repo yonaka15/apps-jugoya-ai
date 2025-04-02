@@ -71,6 +71,7 @@ INSTALLED_APPS = [
     "emoji_finder.apps.EmojiFinderConfig",
     "accounts.apps.AccountsConfig",
     "tailwindcss",
+    "qiita.apps.QiitaConfig",
 ]
 
 MIDDLEWARE = [
