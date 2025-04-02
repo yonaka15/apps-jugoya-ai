@@ -46,7 +46,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
   // ESCキーでモーダルを閉じる
   document.addEventListener('keydown', function(e) {
-    if (e.key === 'Escape' && modal.style.display === 'block') {
+    if (e.key === 'Escape' && !modal.classList.contains('hidden')) {
       closeModal();
     }
   });
@@ -111,19 +111,21 @@ document.addEventListener('DOMContentLoaded', function() {
     if (isSearching) {
       // 検索ボタンを非アクティブにする
       searchButton.disabled = true;
-      searchButton.classList.add('button-disabled');
+      searchButton.classList.add('bg-blue-300', 'cursor-not-allowed');
+      searchButton.classList.remove('bg-blue-500', 'hover:bg-blue-600');
       searchInput.disabled = true;
       
       // ローディングインジケータを表示
-      loadingIndicator.style.display = 'block';
+      loadingIndicator.classList.remove('hidden');
     } else {
       // 検索ボタンをアクティブに戻す
       searchButton.disabled = false;
-      searchButton.classList.remove('button-disabled');
+      searchButton.classList.remove('bg-blue-300', 'cursor-not-allowed');
+      searchButton.classList.add('bg-blue-500', 'hover:bg-blue-600');
       searchInput.disabled = false;
       
       // ローディングインジケータを非表示
-      loadingIndicator.style.display = 'none';
+      loadingIndicator.classList.add('hidden');
     }
   }
 
@@ -139,14 +141,14 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     // 結果コンテナを表示
-    resultsContainer.style.display = 'block';
+    resultsContainer.classList.remove('hidden');
     
     // 検索クエリを表示
     resultsHeading.textContent = `検索結果: "${data.query}"`;
     
     // 絵文字が見つからない場合
     if (!data.emojis || data.emojis.length === 0) {
-      noResults.style.display = 'block';
+      noResults.classList.remove('hidden');
       return;
     }
     
@@ -159,7 +161,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // 各絵文字のカードを作成
     data.emojis.forEach((emoji, index) => {
       const emojiCard = document.createElement('div');
-      emojiCard.className = 'emoji-card';
+      emojiCard.className = 'bg-white rounded-lg shadow-md p-4 hover:shadow-lg transition-shadow transform hover:-translate-y-1 cursor-pointer';
       emojiCard.dataset.index = index; // インデックスを記録
       
       // Unicode値からファイル名を抽出
@@ -168,12 +170,12 @@ document.addEventListener('DOMContentLoaded', function() {
       
       // 実際のHTML作成
       emojiCard.innerHTML = `
-        <div class="emoji-container">
-          <img src="${emoji.metadata.url}" alt="${nameFromCode}">
+        <div class="h-36 flex items-center justify-center mb-4">
+          <img src="${emoji.metadata.url}" alt="${nameFromCode}" class="max-w-full max-h-full object-contain">
         </div>
-        <div class="emoji-details">
-          <h3 class="emoji-name">${nameFromCode}</h3>
-          <p class="similarity">類似度: ${(emoji.similarity * 100).toFixed(1)}%</p>
+        <div class="text-center">
+          <h3 class="text-lg font-semibold text-blue-600 mb-1">${nameFromCode}</h3>
+          <p class="text-sm text-gray-600">類似度: ${(emoji.similarity * 100).toFixed(1)}%</p>
         </div>
       `;
       
@@ -213,13 +215,15 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // モーダル詳細情報を設定
     modalDetails.innerHTML = `
-      <h3>絵文字コード: ${nameFromCode}</h3>
-      <p class="similarity">類似度: ${(emoji.similarity * 100).toFixed(1)}%</p>
-      <p class="format">形式: ${emoji.metadata.original_format}</p>
-      <p class="timestamp">タイムスタンプ: ${timestamp}</p>
-      <p class="model">モデル: ${emoji.metadata.model}</p>
-      <button id="copy-image-button" class="copy-button">画像をコピー</button>
-      <p id="copy-status" class="copy-status" style="display: none;">コピーしました！</p>
+      <h3 class="text-xl font-bold text-gray-800 mb-4">絵文字コード: ${nameFromCode}</h3>
+      <div class="space-y-2 mb-6">
+        <p class="flex items-center text-gray-700"><span class="w-2 h-2 bg-blue-500 rounded-full mr-2"></span>類似度: ${(emoji.similarity * 100).toFixed(1)}%</p>
+        <p class="flex items-center text-gray-700"><span class="w-2 h-2 bg-blue-500 rounded-full mr-2"></span>形式: ${emoji.metadata.original_format}</p>
+        <p class="flex items-center text-gray-700"><span class="w-2 h-2 bg-blue-500 rounded-full mr-2"></span>タイムスタンプ: ${timestamp}</p>
+        <p class="flex items-center text-gray-700"><span class="w-2 h-2 bg-blue-500 rounded-full mr-2"></span>モデル: ${emoji.metadata.model}</p>
+      </div>
+      <button id="copy-image-button" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded transition-colors">画像をコピー</button>
+      <p id="copy-status" class="mt-2 text-sm font-medium hidden"></p>
     `;
     
     // コピーボタンにイベントリスナーを追加
@@ -242,50 +246,50 @@ document.addEventListener('DOMContentLoaded', function() {
             navigator.clipboard.write([item])
               .then(() => {
                 // コピー成功
-                copyStatus.style.display = 'block';
+                copyStatus.classList.remove('hidden', 'text-red-500');
+                copyStatus.classList.add('text-green-500');
                 copyStatus.textContent = 'コピーしました！';
-                copyStatus.style.color = '#2ecc71';
                 
                 // 3秒後にステータスを非表示
                 setTimeout(() => {
-                  copyStatus.style.display = 'none';
+                  copyStatus.classList.add('hidden');
                 }, 3000);
               })
               .catch(err => {
                 // コピー失敗
-                copyStatus.style.display = 'block';
+                copyStatus.classList.remove('hidden', 'text-green-500');
+                copyStatus.classList.add('text-red-500');
                 copyStatus.textContent = 'コピーに失敗しました: ' + err.message;
-                copyStatus.style.color = '#e74c3c';
               });
           } catch (err) {
             // ClipboardItem APIがサポートされていない場合
-            copyStatus.style.display = 'block';
+            copyStatus.classList.remove('hidden', 'text-green-500');
+            copyStatus.classList.add('text-red-500');
             copyStatus.textContent = 'お使いのブラウザは画像のコピーをサポートしていません';
-            copyStatus.style.color = '#e74c3c';
           }
         })
         .catch(err => {
-          copyStatus.style.display = 'block';
+          copyStatus.classList.remove('hidden', 'text-green-500');
+          copyStatus.classList.add('text-red-500');
           copyStatus.textContent = '画像の取得に失敗しました: ' + err.message;
-          copyStatus.style.color = '#e74c3c';
         });
     }
     
     // モーダルを表示
-    modal.style.display = 'block';
+    modal.classList.remove('hidden');
     
     // スクロール防止
-    document.body.style.overflow = 'hidden';
+    document.body.classList.add('overflow-hidden');
   }
 
   /**
    * モーダルを閉じる
    */
   function closeModal() {
-    modal.style.display = 'none';
+    modal.classList.add('hidden');
     
     // スクロール再開
-    document.body.style.overflow = '';
+    document.body.classList.remove('overflow-hidden');
   }
 
   /**
@@ -294,16 +298,16 @@ document.addEventListener('DOMContentLoaded', function() {
    */
   function showError(message) {
     errorText.textContent = message;
-    errorMessage.style.display = 'block';
+    errorMessage.classList.remove('hidden');
   }
 
   /**
    * UI状態をリセットする
    */
   function resetUI() {
-    errorMessage.style.display = 'none';
-    resultsContainer.style.display = 'none';
-    noResults.style.display = 'none';
+    errorMessage.classList.add('hidden');
+    resultsContainer.classList.add('hidden');
+    noResults.classList.add('hidden');
   }
 
   /**
