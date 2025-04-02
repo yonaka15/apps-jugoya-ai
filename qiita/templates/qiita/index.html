@@ -1,0 +1,92 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>Qiita記事検索</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="{% static 'tailwindcss/css/output.css' %}">
+</head>
+
+<body class="bg-gray-100 font-sans">
+  <!-- ヘッダー -->
+  <header class="bg-gray-800 text-white shadow-md">
+    <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+      <h1 class="text-xl font-bold">Qiita記事検索</h1>
+      <div class="user-menu">
+        {% if user.is_authenticated %}
+        <span class="mr-4 font-medium">{{ user.username }}</span>
+        <form method="post" action="{% url 'logout' %}" class="inline">
+          {% csrf_token %}
+          <button type="submit" class="bg-gray-700 hover:bg-gray-600 px-3 py-1 rounded transition-colors">
+            ログアウト
+          </button>
+        </form>
+        {% endif %}
+      </div>
+    </div>
+  </header>
+
+  <!-- メインコンテンツ -->
+  <main class="container mx-auto px-4 py-8">
+    <section class="mb-8">
+      <h2 class="text-2xl font-bold text-gray-800 mb-4">Qiita記事検索</h2>
+      
+      <!-- プロフィールリンク -->
+      <div class="bg-green-50 border border-green-200 rounded-lg p-4 mb-6 flex items-center">
+        <svg class="w-6 h-6 text-green-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.121 17.804A13.937 13.937 0 0112 16c2.5 0 4.847.655 6.879 1.804M15 10a3 3 0 11-6 0 3 3 0 016 0zm6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+        </svg>
+        <div>
+          <span class="text-gray-700">全ての記事は私のQiitaで公開しています：</span>
+          <a href="https://qiita.com/yonaka15" target="_blank" class="text-green-700 font-medium ml-1 hover:underline">https://qiita.com/yonaka15</a>
+        </div>
+      </div>
+
+      <p class="text-gray-600 mb-6">検索したいテキストを入力してください。関連するQiita記事を検索します。</p>
+
+      <!-- 検索フォーム -->
+      <div class="bg-white p-6 rounded-lg shadow-md mb-8">
+        <div class="mb-4">
+          <input type="text" id="search-query"
+            class="w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            placeholder="検索キーワードを入力" required>
+        </div>
+        <button type="button" id="search-button"
+          class="bg-blue-500 hover:bg-blue-600 text-white px-5 py-3 rounded-md transition-colors">
+          検索
+        </button>
+      </div>
+
+      <!-- エラーメッセージ -->
+      <div id="error-message" class="bg-red-100 text-red-700 p-4 rounded-md mb-6 hidden">
+        <p id="error-text"></p>
+      </div>
+
+      <!-- ローディングインジケーター -->
+      <div id="loading-indicator" class="text-center py-6 hidden">
+        <p class="text-blue-500 font-semibold">検索中...</p>
+      </div>
+
+      <!-- 検索結果 -->
+      <div id="results-container" class="hidden">
+        <h2 id="results-heading" class="text-xl font-bold text-gray-800 mb-2"></h2>
+        <div id="results-count" class="font-medium text-gray-600 mb-4"></div>
+
+        <!-- 記事結果 -->
+        <div id="article-results" class="space-y-4"></div>
+
+        <!-- 検索結果なし -->
+        <div id="no-results" class="bg-blue-50 p-6 rounded-lg text-center hidden">
+          <p class="text-gray-600">検索結果が見つかりませんでした。別のキーワードをお試しください。</p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script src="{% static 'qiita/js/app.js' %}"></script>
+</body>
+
+</html>
+<!-- vim: set ft=htmldjango: -->
