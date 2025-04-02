@@ -70,6 +70,7 @@ INSTALLED_APPS = [
     "read_images.apps.ReadImagesConfig",
     "emoji_finder.apps.EmojiFinderConfig",
     "accounts.apps.AccountsConfig",
+    "tailwindcss",
 ]
 
 MIDDLEWARE = [
