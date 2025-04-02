@@ -56,7 +56,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
   // ESCキーでモーダルを閉じる
   document.addEventListener('keydown', function(e) {
-    if (e.key === 'Escape' && modal.style.display === 'block') {
+    if (e.key === 'Escape' && !modal.classList.contains('hidden')) {
       closeModal();
     }
   });
@@ -106,7 +106,7 @@ document.addEventListener('DOMContentLoaded', function() {
       
       // 画像が見つかった場合は、AIの回答セクションを表示
       if (currentSearchResults.length > 0) {
-        aiAnswerSection.style.display = 'block';
+        aiAnswerSection.classList.remove('hidden');
       }
     })
     .catch(error => {
@@ -170,7 +170,7 @@ document.addEventListener('DOMContentLoaded', function() {
     .catch(error => {
       showError(`回答取得中にエラーが発生しました: ${error.message}`);
       // エラー時はコンテナを非表示に
-      answerContainer.style.display = 'none';
+      answerContainer.classList.add('hidden');
     })
     .finally(() => {
       // ローディング状態を解除
@@ -186,20 +186,22 @@ document.addEventListener('DOMContentLoaded', function() {
     if (isLoading) {
       // ボタンを非アクティブにする
       getAnswerButton.disabled = true;
-      getAnswerButton.classList.add('button-disabled');
+      getAnswerButton.classList.add('bg-green-300', 'cursor-not-allowed');
+      getAnswerButton.classList.remove('bg-green-500', 'hover:bg-green-600');
       
       // ローディングインジケータを表示
-      answerLoadingIndicator.style.display = 'block';
+      answerLoadingIndicator.classList.remove('hidden');
       
       // 回答コンテナを非表示
-      answerContainer.style.display = 'none';
+      answerContainer.classList.add('hidden');
     } else {
       // ボタンをアクティブに戻す
       getAnswerButton.disabled = false;
-      getAnswerButton.classList.remove('button-disabled');
+      getAnswerButton.classList.remove('bg-green-300', 'cursor-not-allowed');
+      getAnswerButton.classList.add('bg-green-500', 'hover:bg-green-600');
       
       // ローディングインジケータを非表示
-      answerLoadingIndicator.style.display = 'none';
+      answerLoadingIndicator.classList.add('hidden');
     }
   }
 
@@ -221,7 +223,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     // 回答コンテナを表示
-    answerContainer.style.display = 'block';
+    answerContainer.classList.remove('hidden');
     
     // 回答内容を設定
     let answerText = '';
@@ -264,19 +266,21 @@ document.addEventListener('DOMContentLoaded', function() {
     if (isSearching) {
       // 検索ボタンを非アクティブにする
       searchButton.disabled = true;
-      searchButton.classList.add('button-disabled');
+      searchButton.classList.add('bg-blue-300', 'cursor-not-allowed');
+      searchButton.classList.remove('bg-blue-500', 'hover:bg-blue-600');
       searchInput.disabled = true;
       
       // ローディングインジケータを表示
-      loadingIndicator.style.display = 'block';
+      loadingIndicator.classList.remove('hidden');
     } else {
       // 検索ボタンをアクティブに戻す
       searchButton.disabled = false;
-      searchButton.classList.remove('button-disabled');
+      searchButton.classList.remove('bg-blue-300', 'cursor-not-allowed');
+      searchButton.classList.add('bg-blue-500', 'hover:bg-blue-600');
       searchInput.disabled = false;
       
       // ローディングインジケータを非表示
-      loadingIndicator.style.display = 'none';
+      loadingIndicator.classList.add('hidden');
     }
   }
 
@@ -292,14 +296,14 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     // 結果コンテナを表示
-    resultsContainer.style.display = 'block';
+    resultsContainer.classList.remove('hidden');
     
     // 検索クエリを表示
     resultsHeading.textContent = `検索結果: "${data.query}"`;
     
     // 画像が見つからない場合
     if (!data.images || data.images.length === 0) {
-      noResults.style.display = 'block';
+      noResults.classList.remove('hidden');
       return;
     }
     
@@ -312,21 +316,21 @@ document.addEventListener('DOMContentLoaded', function() {
     // 各画像のカードを作成
     data.images.forEach((image, index) => {
       const imageCard = document.createElement('div');
-      imageCard.className = 'image-card';
+      imageCard.className = 'bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow transform hover:-translate-y-1 cursor-pointer';
       imageCard.dataset.index = index; // インデックスを記録
       
       const similarity = image.similarity.toFixed(2);
       const timestamp = formatTimestamp(image.metadata.timestamp);
       
       imageCard.innerHTML = `
-        <div class="image-container">
-          <img src="${image.metadata.url}" alt="${image.metadata.filename}">
+        <div class="h-48 overflow-hidden">
+          <img src="${image.metadata.url}" alt="${image.metadata.filename}" class="w-full h-full object-cover">
         </div>
-        <div class="image-details">
-          <h3>${image.metadata.filename}</h3>
-          <p class="similarity">類似度: ${similarity}</p>
-          <p class="timestamp">撮影日時: ${timestamp}</p>
-          <p class="model">処理モデル: ${image.metadata.model}</p>
+        <div class="p-4">
+          <h3 class="text-lg font-semibold text-gray-800 mb-2 break-all">${image.metadata.filename}</h3>
+          <p class="text-blue-600 font-medium mb-1">類似度: ${similarity}</p>
+          <p class="text-gray-600 text-sm mb-1">撮影日時: ${timestamp}</p>
+          <p class="text-gray-600 text-sm">処理モデル: ${image.metadata.model}</p>
         </div>
       `;
       
@@ -356,29 +360,31 @@ document.addEventListener('DOMContentLoaded', function() {
     const timestamp = formatTimestamp(image.metadata.timestamp);
     
     modalDetails.innerHTML = `
-      <h3>${image.metadata.filename}</h3>
-      <p class="similarity">類似度: ${similarity}</p>
-      <p class="timestamp">撮影日時: ${timestamp}</p>
-      <p class="model">処理モデル: ${image.metadata.model}</p>
-      <p class="format">ファイル形式: ${image.metadata.original_format}</p>
-      <p class="usage">使用トークン: ${image.metadata.usage?.total_tokens || 'N/A'}</p>
+      <h3 class="text-xl font-bold text-gray-800 mb-4">${image.metadata.filename}</h3>
+      <div class="space-y-2 mb-4">
+        <p class="flex items-center text-gray-700"><span class="w-2 h-2 bg-blue-500 rounded-full mr-2"></span>類似度: ${similarity}</p>
+        <p class="flex items-center text-gray-700"><span class="w-2 h-2 bg-blue-500 rounded-full mr-2"></span>撮影日時: ${timestamp}</p>
+        <p class="flex items-center text-gray-700"><span class="w-2 h-2 bg-blue-500 rounded-full mr-2"></span>処理モデル: ${image.metadata.model}</p>
+        <p class="flex items-center text-gray-700"><span class="w-2 h-2 bg-blue-500 rounded-full mr-2"></span>ファイル形式: ${image.metadata.original_format || 'N/A'}</p>
+        <p class="flex items-center text-gray-700"><span class="w-2 h-2 bg-blue-500 rounded-full mr-2"></span>使用トークン: ${image.metadata.usage?.total_tokens || 'N/A'}</p>
+      </div>
     `;
     
     // モーダルを表示
-    modal.style.display = 'block';
+    modal.classList.remove('hidden');
     
     // スクロール防止
-    document.body.style.overflow = 'hidden';
+    document.body.classList.add('overflow-hidden');
   }
 
   /**
    * モーダルを閉じる
    */
   function closeModal() {
-    modal.style.display = 'none';
+    modal.classList.add('hidden');
     
     // スクロール再開
-    document.body.style.overflow = '';
+    document.body.classList.remove('overflow-hidden');
   }
 
   /**
@@ -387,18 +393,18 @@ document.addEventListener('DOMContentLoaded', function() {
    */
   function showError(message) {
     errorText.textContent = message;
-    errorMessage.style.display = 'block';
+    errorMessage.classList.remove('hidden');
   }
 
   /**
    * UI状態をリセットする
    */
   function resetUI() {
-    errorMessage.style.display = 'none';
-    resultsContainer.style.display = 'none';
-    noResults.style.display = 'none';
-    aiAnswerSection.style.display = 'none';
-    answerContainer.style.display = 'none';
+    errorMessage.classList.add('hidden');
+    resultsContainer.classList.add('hidden');
+    noResults.classList.add('hidden');
+    aiAnswerSection.classList.add('hidden');
+    answerContainer.classList.add('hidden');
   }
 
   /**
