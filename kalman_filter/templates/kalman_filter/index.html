@@ -1,0 +1,273 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>カルマンフィルタの理解</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="{% static 'tailwindcss/css/output.css' %}">
+  <!-- Chart.jsライブラリの読み込み -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    .section {
+      margin-bottom: 2rem;
+      width: 100%;
+    }
+
+    .block-item {
+      background-color: #f9fafb;
+      padding: 1rem;
+      border-radius: 0.5rem;
+      margin-bottom: 1rem;
+      width: 100%;
+    }
+
+    .math-formula {
+      overflow-x: auto;
+      white-space: nowrap;
+      margin-bottom: 0.5rem;
+    }
+
+    .control-item {
+      margin-bottom: 1rem;
+    }
+
+  </style>
+</head>
+
+<body class="bg-gray-100 font-sans">
+  <!-- ヘッダー -->
+  <header class="bg-gray-800 text-white shadow-md">
+    <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+      <h1 class="text-xl font-bold">カルマンフィルタ</h1>
+      <div class="user-menu">
+        {% if user.is_authenticated %}
+        <span class="mr-4 font-medium">{{ user.username }}</span>
+        <form method="post" action="{% url 'logout' %}" class="inline">
+          {% csrf_token %}
+          <button type="submit" class="bg-gray-700 hover:bg-gray-600 px-3 py-1 rounded transition-colors">
+            ログアウト
+          </button>
+        </form>
+        {% endif %}
+      </div>
+    </div>
+  </header>
+
+  <!-- メインコンテンツ -->
+  <main class="container mx-auto px-4 py-8">
+    <div class="bg-white rounded-lg shadow-lg p-6 mx-auto">
+      <h1 class="text-2xl font-bold mb-6 text-center">カルマンフィルタの理解</h1>
+
+      <!-- 説明セクション -->
+      <div class="section">
+        <h2 class="text-xl font-semibold mb-3">カルマンフィルタとは</h2>
+        <p class="mb-4">
+          カルマンフィルタは、ノイズを含む観測値から状態を推定するための再帰的なアルゴリズムです。
+          1960年代にRudolf E. Kálmánによって開発され、航空宇宙、自動運転、ロボット工学、金融予測など
+          様々な分野で広く使用されています。
+        </p>
+        <p class="mb-4">
+          カルマンフィルタの主な特徴:
+        </p>
+        <ul class="list-disc pl-6 mb-4">
+          <li>過去のすべての観測値ではなく、直前の状態推定値だけを必要とする</li>
+          <li>測定ノイズとプロセスノイズの両方を考慮する</li>
+          <li>予測ステップと更新ステップの2段階のプロセスで構成される</li>
+          <li>線形システムと正規分布のノイズを前提としている（基本形の場合）</li>
+        </ul>
+      </div>
+
+      <!-- 数学的説明 -->
+      <div class="section">
+        <h2 class="text-xl font-semibold mb-3">カルマンフィルタの数学的基礎</h2>
+
+        <div class="block-item">
+          <h3 class="font-medium mb-2">予測ステップ（時間更新）:</h3>
+          <div class="math-formula">
+            <p class="mb-1">事前状態推定: x̂<sub>k|k-1</sub> = F<sub>k</sub>x̂<sub>k-1|k-1</sub> + B<sub>k</sub>u<sub>k</sub>
+            </p>
+          </div>
+          <div class="math-formula">
+            <p>事前誤差共分散: P<sub>k|k-1</sub> = F<sub>k</sub>P<sub>k-1|k-1</sub>F<sub>k</sub><sup>T</sup> + Q<sub>k</sub>
+            </p>
+          </div>
+          <p class="mt-2 text-sm">
+            ここで、F<sub>k</sub>は状態遷移モデル、B<sub>k</sub>は制御入力モデル、u<sub>k</sub>は制御ベクトル、
+            Q<sub>k</sub>はプロセスノイズの共分散です。
+          </p>
+        </div>
+
+        <div class="block-item">
+          <h3 class="font-medium mb-2">更新ステップ（測定更新）:</h3>
+          <div class="math-formula">
+            <p class="mb-1">イノベーション: ỹ<sub>k</sub> = z<sub>k</sub> - H<sub>k</sub>x̂<sub>k|k-1</sub></p>
+          </div>
+          <div class="math-formula">
+            <p class="mb-1">イノベーション共分散: S<sub>k</sub> = H<sub>k</sub>P<sub>k|k-1</sub>H<sub>k</sub><sup>T</sup> +
+              R<sub>k</sub></p>
+          </div>
+          <div class="math-formula">
+            <p class="mb-1">カルマンゲイン: K<sub>k</sub> =
+              P<sub>k|k-1</sub>H<sub>k</sub><sup>T</sup>S<sub>k</sub><sup>-1</sup></p>
+          </div>
+          <div class="math-formula">
+            <p class="mb-1">事後状態推定: x̂<sub>k|k</sub> = x̂<sub>k|k-1</sub> + K<sub>k</sub>ỹ<sub>k</sub></p>
+          </div>
+          <div class="math-formula">
+            <p>事後誤差共分散: P<sub>k|k</sub> = (I - K<sub>k</sub>H<sub>k</sub>)P<sub>k|k-1</sub></p>
+          </div>
+          <p class="mt-2 text-sm">
+            ここで、H<sub>k</sub>は観測モデル、z<sub>k</sub>は観測値、R<sub>k</sub>は観測ノイズの共分散です。
+          </p>
+        </div>
+      </div>
+
+      <!-- シミュレーションコントロール -->
+      <div class="section bg-gray-50 p-4 rounded-lg">
+        <h2 class="text-xl font-semibold mb-3">カルマンフィルタシミュレーション</h2>
+
+        <div class="control-item">
+          <label class="block text-sm font-medium mb-1">プロセスノイズ (Q):</label>
+          <input type="range" min="0.001" max="0.1" step="0.001" value="0.01" id="process-noise-slider"
+            class="w-full max-w-md" />
+          <span class="ml-2 text-sm" id="process-noise-value">0.010</span>
+        </div>
+
+        <div class="control-item">
+          <label class="block text-sm font-medium mb-1">測定ノイズ (R):</label>
+          <input type="range" min="0.01" max="0.5" step="0.01" value="0.1" id="measurement-noise-slider"
+            class="w-full max-w-md" />
+          <span class="ml-2 text-sm" id="measurement-noise-value">0.10</span>
+        </div>
+
+        <div class="control-item">
+          <label class="block text-sm font-medium mb-1">シミュレーション速度:</label>
+          <input type="range" min="0.5" max="5" step="0.5" value="1" id="speed-slider" class="w-full max-w-md" />
+          <span class="ml-2 text-sm" id="speed-value">1.0x</span>
+        </div>
+
+        <div class="flex flex-wrap gap-2 mt-4">
+          <button id="start-stop-button" class="px-4 py-2 rounded-md bg-green-500 hover:bg-green-600 text-white">
+            開始
+          </button>
+          <button id="reset-button" class="px-4 py-2 rounded-md bg-gray-800 hover:bg-gray-600 text-white">
+            リセット
+          </button>
+          <button id="step-button" class="px-4 py-2 rounded-md bg-blue-500 hover:bg-blue-600 text-white">
+            1ステップ進める
+          </button>
+        </div>
+      </div>
+
+      <!-- グラフ表示 -->
+      <div class="section">
+        <h3 class="text-lg font-medium mb-2">状態推定の可視化</h3>
+        <div class="block-item p-0">
+          <canvas id="mainChart" width="400" height="250"></canvas>
+        </div>
+      </div>
+
+      <!-- カルマンゲインの表示 -->
+      <div class="section">
+        <h3 class="text-lg font-medium mb-2">カルマンゲインの推移</h3>
+        <div class="block-item p-0">
+          <canvas id="gainChart" width="400" height="200"></canvas>
+        </div>
+      </div>
+
+      <!-- 現在の状態表示 -->
+      <div class="section">
+        <div class="block-item bg-blue-50">
+          <h3 class="font-medium mb-2">カルマンフィルタの状態</h3>
+          <p><strong>現在の推定値 (x):</strong> <span id="current-x">0.0000</span></p>
+          <p><strong>推定誤差 (P):</strong> <span id="current-p">1.0000</span></p>
+        </div>
+
+        <div class="block-item bg-green-50">
+          <h3 class="font-medium mb-2">最新の測定</h3>
+          <div id="latest-measurement">
+            <p>まだ測定がありません</p>
+          </div>
+        </div>
+
+        <div class="block-item bg-purple-50">
+          <h3 class="font-medium mb-2">フィルタ性能</h3>
+          <div id="filter-performance">
+            <p>まだデータがありません</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- 応用例 -->
+      <div class="section">
+        <h2 class="text-xl font-semibold mb-3">カルマンフィルタの応用例</h2>
+
+        <div class="block-item">
+          <h3 class="font-medium mb-2">航空宇宙</h3>
+          <p>航空機やロケットの軌道予測、姿勢制御、GPSとIMUのセンサーフュージョン</p>
+        </div>
+
+        <div class="block-item">
+          <h3 class="font-medium mb-2">自動運転</h3>
+          <p>車両の位置・速度推定、障害物追跡、各種センサー（カメラ、LiDAR、レーダー）の統合</p>
+        </div>
+
+        <div class="block-item">
+          <h3 class="font-medium mb-2">ロボティクス</h3>
+          <p>ロボットの姿勢推定、SLAM（同時位置推定と地図作成）、物体追跡</p>
+        </div>
+
+        <div class="block-item">
+          <h3 class="font-medium mb-2">金融</h3>
+          <p>株価予測、ポートフォリオ最適化、市場変動のモデリング</p>
+        </div>
+
+        <div class="block-item">
+          <h3 class="font-medium mb-2">コンピュータビジョン</h3>
+          <p>物体追跡、動き予測、カメラ位置推定</p>
+        </div>
+
+        <div class="block-item">
+          <h3 class="font-medium mb-2">通信</h3>
+          <p>信号処理、ノイズ除去、チャネル推定</p>
+        </div>
+      </div>
+
+      <!-- カルマンフィルタのバリエーション -->
+      <div class="section">
+        <h2 class="text-xl font-semibold mb-3">カルマンフィルタのバリエーション</h2>
+
+        <div class="block-item">
+          <h3 class="font-medium mb-2">拡張カルマンフィルタ (EKF)</h3>
+          <p>非線形システムに対応するため、非線形関数を各時点でテイラー展開により線形近似します。
+            自動運転やロボティクスなど、高度に非線形なシステムでよく使用されます。</p>
+        </div>
+
+        <div class="block-item">
+          <h3 class="font-medium mb-2">アンセンテッドカルマンフィルタ (UKF)</h3>
+          <p>非線形性をより適切に扱うため、特定の点（シグマポイント）を通じて分布を近似します。
+            EKFよりも複雑ですが、強い非線形性を持つシステムでより良い結果を提供します。</p>
+        </div>
+
+        <div class="block-item">
+          <h3 class="font-medium mb-2">パーティクルフィルタ</h3>
+          <p>非線形・非ガウス性のシステムに対応するため、多数のサンプル（パーティクル）で
+            確率分布を表現します。計算コストが高いですが、複雑な確率分布を扱えます。</p>
+        </div>
+
+        <div class="block-item">
+          <h3 class="font-medium mb-2">情報フィルタ</h3>
+          <p>カルマンフィルタの数学的に等価な形式で、共分散の逆行列（情報行列）を扱います。
+            高次元の観測空間や分散システムで有利になることがあります。</p>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- JavaScriptの読み込み -->
+  <script src="{% static 'kalman_filter/js/kalman_visualization.js' %}"></script>
+</body>
+
+</html>
