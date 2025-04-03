@@ -6,5 +6,6 @@ urlpatterns = [
     path("emoji_finder/", include("emoji_finder.urls")),
     path("accounts/", include("django.contrib.auth.urls")),
     path("qiita/", include("qiita.urls")),
+    path("kalman_filter/", include("kalman_filter.urls")),
     path("admin/", admin.site.urls),
 ]

@@ -72,6 +72,7 @@ INSTALLED_APPS = [
     "accounts.apps.AccountsConfig",
     "tailwindcss",
     "qiita.apps.QiitaConfig",
+    "kalman_filter.apps.KalmanFilterConfig",
 ]
 
 MIDDLEWARE = [
