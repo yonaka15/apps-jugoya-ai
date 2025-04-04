@@ -98,7 +98,22 @@ function addMessage(role, content) {
   }`;
   
   const contentElement = document.createElement('p');
-  contentElement.textContent = content;
+  
+  // JSONデータとして整形するか判断
+  const isJsonContent = role === 'assistant' && 
+    (content.trim().startsWith('{') || content.trim().startsWith('['));
+  
+  if (isJsonContent) {
+    // JSONデータはプリフォーマットテキストとして表示
+    const pre = document.createElement('pre');
+    pre.className = 'whitespace-pre-wrap text-xs font-mono overflow-x-auto';
+    pre.textContent = content;
+    contentElement.appendChild(pre);
+  } else {
+    // 通常のテキストとして表示
+    contentElement.textContent = content;
+    contentElement.className = role === 'user' ? 'text-white' : 'text-gray-800';
+  }
   
   const timeElement = document.createElement('p');
   timeElement.className = 'text-xs mt-1 opacity-50';
@@ -117,20 +132,54 @@ function addMessage(role, content) {
 // アシスタントメッセージの更新関数
 function updateAssistantMessage(delta) {
   if (messages.length > 0 && messages[messages.length - 1].role === 'assistant') {
-    // 最後のメッセージがアシスタントのものなら内容を追加
+    // 最後のメッセージがアシスタントのものなら内容を置き換え（JSONの場合は追加ではなく置き換え）
     const lastMessage = messages[messages.length - 1];
-    lastMessage.content += delta;
+    lastMessage.content = delta; // '+='から'='に変更して、JSONオブジェクト全体を表示
     
     // DOMを更新
     const lastBubble = elements.messagesContainer.lastChild.querySelector('div p:first-child');
     if (lastBubble) {
-      lastBubble.textContent = lastMessage.content;
+      // テキストコンテンツとして設定するのではなく、innerHTMLを使用して整形を保持
+      lastBubble.innerHTML = ''; // 内容をクリア
+      
+      // コードブロックとして表示
+      const pre = document.createElement('pre');
+      pre.className = 'whitespace-pre-wrap text-xs font-mono overflow-x-auto';
+      pre.textContent = lastMessage.content;
+      lastBubble.appendChild(pre);
     }
     
     scrollToBottom(elements.messagesEnd);
   } else {
     // 新しいアシスタントメッセージを作成
-    addMessage('assistant', delta);
+    // メッセージの追加方法も変更
+    const message = new Message('assistant', delta);
+    messages.push(message);
+    
+    const messageElement = document.createElement('div');
+    messageElement.className = 'mb-4 text-left';
+    
+    const bubbleElement = document.createElement('div');
+    bubbleElement.className = 'inline-block max-w-[70%] rounded-lg px-4 py-2 bg-white border';
+    
+    const contentElement = document.createElement('p');
+    
+    // コードブロックとして表示
+    const pre = document.createElement('pre');
+    pre.className = 'whitespace-pre-wrap text-xs font-mono overflow-x-auto';
+    pre.textContent = delta;
+    contentElement.appendChild(pre);
+    
+    const timeElement = document.createElement('p');
+    timeElement.className = 'text-xs mt-1 opacity-50';
+    timeElement.textContent = message.timestamp.toLocaleTimeString();
+    
+    bubbleElement.appendChild(contentElement);
+    bubbleElement.appendChild(timeElement);
+    messageElement.appendChild(bubbleElement);
+    
+    elements.messagesContainer.insertBefore(messageElement, elements.messagesEnd);
+    scrollToBottom(elements.messagesEnd);
   }
 }
 
@@ -339,26 +388,35 @@ async function initializeWebRTC() {
     };
 
     dc.onmessage = (event) => {
+      // まずは受信したデータをデバッグログに追加（生データ）
+      addDebugLog(`Received raw data: ${event.data}`);
+      
       try {
+        // JSONとしてパースを試みる
         const realtimeEvent = JSON.parse(event.data);
-        addDebugLog(`Received event: ${JSON.stringify(realtimeEvent)}`);
+        addDebugLog(`Parsed event: ${JSON.stringify(realtimeEvent)}`);
 
-        // テキストデルタイベントの処理
-        if (
-          realtimeEvent.type === "response.text.delta" &&
-          typeof realtimeEvent.delta === "string"
-        ) {
-          updateAssistantMessage(realtimeEvent.delta);
+        // 重要なイベントタイプのみを表示（response.doneとsession.created、およびユーザーからのコマンドメッセージ）
+        const importantEventTypes = [
+          "response.done", 
+          "session.created"
+        ];
+        
+        if (importantEventTypes.includes(realtimeEvent.type)) {
+          // 重要なイベントはJSONとして整形して表示
+          const formattedData = JSON.stringify(realtimeEvent, null, 2);
+          addMessage('assistant', formattedData);
         }
-        // 音声トランスクリプトイベントの処理
-        else if (
-          realtimeEvent.type === "response.audio_transcript.done" &&
-          typeof realtimeEvent.transcript === "string"
-        ) {
+        // トランスクリプトイベントは従来通り処理
+        else if (realtimeEvent.type === "response.audio_transcript.done" && typeof realtimeEvent.transcript === "string") {
           addTranscript(realtimeEvent.transcript);
         }
+        // その他のイベントはデバッグログにのみ記録し、UIには表示しない
       } catch (error) {
+        // JSONのパースに失敗した場合は、デバッグログにエラーを記録
         addDebugLog(`Error parsing event: ${error}`);
+        // パースエラーの場合は重要なので、UIにも表示
+        addMessage('assistant', `[Parse Error] Raw data: ${event.data}`);
       }
     };
 
@@ -450,12 +508,16 @@ async function sendMessage() {
   }
 
   try {
-    // 即座にUIにユーザーメッセージを表示
-    addMessage("user", messageText);
-
-    // メッセージをフォーマットして送信
+    // メッセージをフォーマット
     const userMessage = formatUserMessage(messageText);
     const responseRequest = formatResponseRequest();
+    
+    // ユーザーメッセージは元のテキストをそのまま表示
+    addMessage("user", messageText);
+    
+    // デバッグ用にフォーマットされたJSONもログに記録
+    const formattedUserMessage = JSON.stringify(userMessage, null, 2);
+    addDebugLog(`Sending formatted message: ${formattedUserMessage}`);
     
     try {
       addDebugLog(`Sending message: ${JSON.stringify(userMessage)}`);
