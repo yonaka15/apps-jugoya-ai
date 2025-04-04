@@ -73,6 +73,7 @@ INSTALLED_APPS = [
     "tailwindcss",
     "qiita.apps.QiitaConfig",
     "kalman_filter.apps.KalmanFilterConfig",
+    "openai_rtc.apps.OpenAIRtcConfig",
 ]
 
 MIDDLEWARE = [

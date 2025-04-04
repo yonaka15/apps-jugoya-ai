@@ -7,5 +7,6 @@ urlpatterns = [
     path("accounts/", include("django.contrib.auth.urls")),
     path("qiita/", include("qiita.urls")),
     path("kalman_filter/", include("kalman_filter.urls")),
+    path("openai_rtc/", include("openai_rtc.urls")),
     path("admin/", admin.site.urls),
 ]
