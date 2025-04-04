@@ -37,30 +37,36 @@
     <div class="p-4 flex-grow overflow-hidden max-w-4xl mx-auto w-full flex flex-col">
       <!-- Status Section -->
       <div class="mb-4 flex-none">
-        <div class="flex items-center justify-between">
+        <!-- タイトルと操作部分を小画面では縦並びに -->
+        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
           <h2 class="text-xl font-semibold">WebRTC Status</h2>
-          <div class="flex gap-2 items-center">
-            <div class="mr-4">
-              <label for="model-select" class="mr-2 text-sm font-medium">モデル:</label>
-              <select id="model-select" class="rounded border-gray-300 px-3 py-1.5 text-sm">
+          <!-- 操作部分も小画面では縦並びに -->
+          <div class="flex flex-col sm:flex-row gap-3 sm:items-center">
+            <div class="w-full sm:w-auto">
+              <label for="model-select" class="block sm:inline mr-2 text-sm font-medium">モデル:</label>
+              <select id="model-select" class="w-full sm:w-auto rounded border-gray-300 px-3 py-1.5 text-sm">
                 <option value="gpt-4o-realtime-preview-2024-12-17">gpt-4o-realtime-preview-2024-12-17</option>
                 <option value="gpt-4o-mini-realtime-preview-2024-12-17">gpt-4o-mini-realtime-preview-2024-12-17</option>
               </select>
             </div>
-            <button id="connect-button" class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-md">
-              Connect
-            </button>
-            <button id="disconnect-button"
-              class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-md disabled:opacity-50 disabled:cursor-not-allowed"
-              disabled>
-              Disconnect
-            </button>
+            <div class="flex gap-2">
+              <button id="connect-button" class="flex-1 sm:flex-none bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-md">
+                Connect
+              </button>
+              <button id="disconnect-button"
+                class="flex-1 sm:flex-none bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-md disabled:opacity-50 disabled:cursor-not-allowed"
+                disabled>
+                Disconnect
+              </button>
+            </div>
           </div>
         </div>
-        <p id="status" class="status-disconnected">Disconnected</p>
-        <p id="data-channel-status" class="data-channel-not-ready">
-          Data Channel: Not Ready
-        </p>
+        <div class="mt-2">
+          <p id="status" class="status-disconnected">Disconnected</p>
+          <p id="data-channel-status" class="data-channel-not-ready">
+            Data Channel: Not Ready
+          </p>
+        </div>
       </div>
 
       <div id="error-container" class="bg-red-50 border border-red-200 rounded-md p-4 mb-4 flex-none hidden">
@@ -69,10 +75,10 @@
 
       <!-- Main Content Area - using CSS Grid -->
       <div class="flex-grow grid grid-cols-1 md:grid-cols-2 gap-4 min-h-0">
-        <!-- Left Side: Chat Messages -->
+        <!-- Left Side: Data Channel -->
         <div class="flex flex-col min-h-0">
           <h2 class="text-xl font-semibold mb-2 flex-none">
-            Chat Messages
+            Data Channel
           </h2>
           <div id="messages-container" class="border rounded-lg p-4 bg-gray-50 flex-grow overflow-y-auto">
             <!-- Messages will be dynamically inserted here -->
