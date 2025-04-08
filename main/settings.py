@@ -74,6 +74,7 @@ INSTALLED_APPS = [
     "qiita.apps.QiitaConfig",
     "kalman_filter.apps.KalmanFilterConfig",
     "openai_rtc.apps.OpenAIRtcConfig",
+    "translator.apps.TranslatorConfig",
 ]
 
 MIDDLEWARE = [

@@ -6,7 +6,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>OpenAI RTC Demo</title>
-  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="{% static 'tailwindcss/css/output.css' %}">
   <style>
     /* 追加のカスタムスタイル */
     .status-connected {
@@ -50,7 +50,8 @@
               </select>
             </div>
             <div class="flex gap-2">
-              <button id="connect-button" class="flex-1 sm:flex-none bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-md">
+              <button id="connect-button"
+                class="flex-1 sm:flex-none bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-md">
                 Connect
               </button>
               <button id="disconnect-button"
