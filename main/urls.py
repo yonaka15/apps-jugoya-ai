@@ -8,5 +8,6 @@ urlpatterns = [
     path("qiita/", include("qiita.urls")),
     path("kalman_filter/", include("kalman_filter.urls")),
     path("openai_rtc/", include("openai_rtc.urls")),
+    path("translator/", include("translator.urls")),
     path("admin/", admin.site.urls),
 ]
