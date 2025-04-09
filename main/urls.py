@@ -9,5 +9,6 @@ urlpatterns = [
     path("kalman_filter/", include("kalman_filter.urls")),
     path("openai_rtc/", include("openai_rtc.urls")),
     path("translator/", include("translator.urls")),
+    path("subtitle/", include("subtitle.urls")),
     path("admin/", admin.site.urls),
 ]
