@@ -1,0 +1,92 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>英語字幕 - 表示画面</title>
+  <link rel="stylesheet" href="{% static 'tailwindcss/css/output.css' %}" />
+  <style>
+    .text-shadow {
+      text-shadow: 0 0 3px black, 0 0 3px black, 0 0 3px black;
+    }
+
+    body,
+    html {
+      height: 100%;
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+    }
+
+    #subtitle-container {
+      position: fixed;
+      bottom: 20%;
+      left: 0;
+      right: 0;
+      text-align: center;
+      z-index: 1000;
+      padding: 0 20px;
+    }
+
+    .fade-in {
+      animation: fadeIn 0.5s ease-in-out;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+      }
+
+      to {
+        opacity: 1;
+      }
+    }
+
+  </style>
+</head>
+
+<body id="viewer-body" class="bg-gray-800">
+  <div id="subtitle-container" class="flex justify-center items-center">
+    <p id="subtitle-text" class="text-4xl text-white text-shadow whitespace-pre-wrap break-words">
+      ここに字幕が表示されます...
+    </p>
+  </div>
+
+  <!-- ステータス表示（上部に小さく表示） -->
+  <div id="status-container" class="fixed top-2 left-2 bg-black bg-opacity-50 text-white p-2 rounded-md text-xs z-50">
+    <p id="connection-status">接続待機中...</p>
+  </div>
+
+  <!-- エラー表示 -->
+  <div id="error-container" class="fixed top-2 right-2 bg-red-500 text-white p-2 rounded-md text-xs z-50 hidden">
+    <p id="error-message"></p>
+  </div>
+
+  <!-- CSRF Token -->
+  <script>
+    const CSRF_TOKEN = "{{ csrf_token }}";
+
+    // URLからパラメータを取得
+    const urlParams = new URLSearchParams(window.location.search);
+    const model = urlParams.get('model') || 'gpt-4o-realtime-preview-2024-12-17';
+    const backgroundColor = urlParams.get('bg') || '#333333';
+    const textColor = urlParams.get('textColor') || '#ffffff';
+    const fontSize = urlParams.get('fontSize') || 'text-4xl';
+
+    // 背景色とテキスト色を設定
+    document.getElementById('viewer-body').style.backgroundColor = backgroundColor;
+    document.getElementById('subtitle-text').style.color = textColor;
+
+    // フォントサイズを設定
+    const subtitleText = document.getElementById('subtitle-text');
+    subtitleText.className = subtitleText.className.replace(/text-\w+/, fontSize);
+  </script>
+
+  <!-- Load subtitle viewer script -->
+  <script src="{% static 'subtitle/js/subtitle-viewer.js' %}"></script>
+</body>
+
+</html>
+<!-- vim: set filetype=htmldjango: -->
