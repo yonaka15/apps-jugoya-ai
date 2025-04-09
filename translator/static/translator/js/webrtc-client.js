@@ -110,10 +110,10 @@ function updateTranscriptText(delta) {
     // 新しいトランスクリプトの処理を始めたので、フラグをfalseに設定
     isNewTranscript = false;
   }
-  
+
   // デルタをテキストに追加
   currentTranscriptText += delta;
-  
+
   // 現在のトランスクリプト要素を更新
   const currentElement = document.getElementById("current-transcript");
   if (currentElement) {
@@ -122,12 +122,14 @@ function updateTranscriptText(delta) {
       contentElement.textContent = currentTranscriptText;
     }
   }
-  
+
   // 自動スクロール
   scrollContainerToBottom(elements.transcriptsEnd);
-  
+
   // デバッグログに現在の状態を出力
-  addDebugLog(`Current transcript text: (${currentTranscriptText.length} chars)`);
+  addDebugLog(
+    `Current transcript text: (${currentTranscriptText.length} chars)`
+  );
 }
 
 // 変更: 完了したトランスクリプトを処理する関数
@@ -137,10 +139,10 @@ function completeTranscriptText() {
   if (currentElement) {
     currentElement.id = "";
   }
-  
+
   // トランスクリプト配列に追加
   transcripts.push(currentTranscriptText);
-  
+
   // 次のトランスクリプトのために新しいトランスクリプトフラグを設定
   isNewTranscript = true;
   addDebugLog("Transcript text completed");
@@ -194,13 +196,16 @@ function addMessage(role, content) {
   if (isJsonContent) {
     // JSONデータはプリフォーマットテキストとして表示
     const pre = document.createElement("pre");
-    pre.className = "whitespace-pre-wrap text-xs font-mono overflow-x-auto break-words";
+    pre.className =
+      "whitespace-pre-wrap text-xs font-mono overflow-x-auto break-words";
     pre.textContent = content;
     contentElement.appendChild(pre);
   } else {
     // 通常のテキストとして表示
     contentElement.textContent = content;
-    contentElement.className = `${role === "user" ? "text-white" : "text-gray-800"} break-words`;
+    contentElement.className = `${
+      role === "user" ? "text-white" : "text-gray-800"
+    } break-words`;
   }
 
   const timeElement = document.createElement("p");
@@ -236,7 +241,8 @@ function updateAssistantMessage(delta) {
 
       // コードブロックとして表示
       const pre = document.createElement("pre");
-      pre.className = "whitespace-pre-wrap text-xs font-mono overflow-x-auto break-words";
+      pre.className =
+        "whitespace-pre-wrap text-xs font-mono overflow-x-auto break-words";
       pre.textContent = lastMessage.content;
       lastBubble.appendChild(pre);
     }
@@ -259,7 +265,8 @@ function updateAssistantMessage(delta) {
 
     // コードブロックとして表示
     const pre = document.createElement("pre");
-    pre.className = "whitespace-pre-wrap text-xs font-mono overflow-x-auto break-words";
+    pre.className =
+      "whitespace-pre-wrap text-xs font-mono overflow-x-auto break-words";
     pre.textContent = delta;
     contentElement.appendChild(pre);
 
@@ -315,7 +322,7 @@ function updateDataChannelStatus(isReady) {
   // 入力フィールドとボタンの有効/無効を切り替え
   elements.messageInput.disabled = !isReady;
   elements.updateSessionButton.disabled = !isReady; // 新規追加：セッション更新ボタンの有効/無効
-  
+
   // 変更: データチャネルの状態に関わらず、接続前から設定可能にする
   // これらの要素は接続ボタンクリック時に無効化され、接続確立後に再度有効化される
   if (!isConnecting) {
@@ -328,7 +335,7 @@ function updateDataChannelStatus(isReady) {
     elements.instructionsInput.disabled = true;
     elements.audioCheckbox.disabled = true;
   }
-  
+
   updateSendButtonState();
 }
 
@@ -346,12 +353,12 @@ function updateSendButtonState() {
 function getSelectedModalities() {
   // テキストは常に含める（APIの制約に対応）
   const modalities = ["text"];
-  
+
   // 音声チェックボックスがオンの場合は音声も追加
   if (elements.audioCheckbox.checked) {
     modalities.push("audio");
   }
-  
+
   return modalities;
 }
 
@@ -365,14 +372,14 @@ function updateResponseText(delta) {
     // 新しいレスポンスの処理を始めたので、フラグをfalseに設定
     isNewResponse = false;
   }
-  
+
   // デルタをテキストに追加
   currentResponseText += delta;
   elements.responseTextContent.textContent = currentResponseText;
-  
+
   // 自動スクロール
   scrollContainerToBottom(elements.responseTextEnd);
-  
+
   // デバッグログに現在の状態を出力
   addDebugLog(`Current response text: (${currentResponseText.length} chars)`);
 }
@@ -388,8 +395,12 @@ function completeResponseText() {
 function setupModalityCheckboxes() {
   // 音声応答チェックボックスのイベントリスナー
   // シンプル化されたバージョンでは追加の調整は不要
-  elements.audioCheckbox.addEventListener("change", function() {
-    addDebugLog(`Audio response setting changed to: ${this.checked ? 'enabled' : 'disabled'}`);
+  elements.audioCheckbox.addEventListener("change", function () {
+    addDebugLog(
+      `Audio response setting changed to: ${
+        this.checked ? "enabled" : "disabled"
+      }`
+    );
   });
 }
 
@@ -399,13 +410,14 @@ function initializeUIState() {
   elements.voiceSelect.disabled = false;
   elements.instructionsInput.disabled = false;
   elements.audioCheckbox.disabled = false;
-  
+
   // 現在の設定を保存
   currentVoice = elements.voiceSelect.value;
   currentInstructions = elements.instructionsInput.value;
-  
+
   addDebugLog("UI initialized for pre-connection configuration");
 }
 
 // ページロード時にUIの初期状態を設定
 document.addEventListener("DOMContentLoaded", initializeUIState);
+

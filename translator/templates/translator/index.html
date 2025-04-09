@@ -1,286 +1,232 @@
 {% load static %}
 <!DOCTYPE html>
 <html lang="ja">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Translator</title>
-    <link rel="stylesheet" href="{% static 'tailwindcss/css/output.css' %}" />
-    <style>
-      /* 追加のカスタムスタイル */
-      .status-connected {
-        color: #2563eb;
-      }
 
-      .status-disconnected {
-        color: #6b7280;
-      }
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Translator</title>
+  <link rel="stylesheet" href="{% static 'tailwindcss/css/output.css' %}" />
+  <style>
+    /* 追加のカスタムスタイル */
+    .status-connected {
+      color: #2563eb;
+    }
 
-      .status-error {
-        color: #ef4444;
-      }
+    .status-disconnected {
+      color: #6b7280;
+    }
 
-      .data-channel-ready {
-        color: #10b981;
-      }
+    .status-error {
+      color: #ef4444;
+    }
 
-      .data-channel-not-ready {
-        color: #f59e0b;
-      }
-      
-      /* セッション更新中のスタイル */
-      .status-updating {
-        color: #8b5cf6; /* 紫色 */
-      }
-      
-      /* テキストオーバーフロー対策のスタイル */
-      pre {
-        white-space: pre-wrap;       /* CSS3 */
-        word-wrap: break-word;       /* IE, Edge */
-        overflow-wrap: break-word;   /* モダンブラウザ */
-        max-width: 100%;
-        overflow-x: auto;
-      }
-      
-      /* JSON表示コンテナのサイズ制限 */
-      .message-bubble {
-        max-width: 100%;
-        overflow-x: auto;
-      }
-    </style>
-  </head>
+    .data-channel-ready {
+      color: #10b981;
+    }
 
-  <body>
-    <div class="flex flex-col h-screen">
-      <div
-        class="p-4 flex-grow overflow-hidden max-w-4xl mx-auto w-full flex flex-col"
-      >
-        <!-- Status Section -->
-        <div class="mb-4 flex-none">
-          <!-- タイトルと操作部分を小画面では縦並びに -->
-          <div
-            class="flex flex-col md:flex-row md:items-center md:justify-between gap-3"
-          >
-            <h2 class="text-xl font-semibold">WebRTC Status</h2>
-            <!-- 操作部分も小画面では縦並びに -->
-            <div class="flex flex-col sm:flex-row gap-3 sm:items-center">
-              <div class="w-full sm:w-auto">
-                <label
-                  for="model-select"
-                  class="block sm:inline mr-2 text-sm font-medium"
-                  >モデル:</label
-                >
-                <select
-                  id="model-select"
-                  class="w-full sm:w-auto rounded border-gray-300 px-3 py-1.5 text-sm"
-                >
-                  <option value="gpt-4o-realtime-preview-2024-12-17">
-                    gpt-4o-realtime-preview-2024-12-17
-                  </option>
-                  <option value="gpt-4o-mini-realtime-preview-2024-12-17">
-                    gpt-4o-mini-realtime-preview-2024-12-17
-                  </option>
-                </select>
-              </div>
-              <div class="flex gap-2">
-                <button
-                  id="connect-button"
-                  class="flex-1 sm:flex-none bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-md"
-                >
-                  Connect
-                </button>
-                <button
-                  id="disconnect-button"
-                  class="flex-1 sm:flex-none bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-md disabled:opacity-50 disabled:cursor-not-allowed"
-                  disabled
-                >
-                  Disconnect
-                </button>
-              </div>
-            </div>
-          </div>
-          <div class="mt-2">
-            <p id="status" class="status-disconnected">Disconnected</p>
-            <p id="data-channel-status" class="data-channel-not-ready">
-              Data Channel: Not Ready
-            </p>
-          </div>
-        </div>
+    .data-channel-not-ready {
+      color: #f59e0b;
+    }
 
-        <!-- 音声モデル選択セクション -->
-        <div class="mb-4 flex-none">
+    /* セッション更新中のスタイル */
+    .status-updating {
+      color: #8b5cf6;
+      /* 紫色 */
+    }
+
+    /* テキストオーバーフロー対策のスタイル */
+    pre {
+      white-space: pre-wrap;
+      /* CSS3 */
+      word-wrap: break-word;
+      /* IE, Edge */
+      overflow-wrap: break-word;
+      /* モダンブラウザ */
+      max-width: 100%;
+      overflow-x: auto;
+    }
+
+    /* JSON表示コンテナのサイズ制限 */
+    .message-bubble {
+      max-width: 100%;
+      overflow-x: auto;
+    }
+
+  </style>
+</head>
+
+<body>
+  <div class="flex flex-col h-screen">
+    <div class="p-4 flex-grow overflow-hidden max-w-4xl mx-auto w-full flex flex-col">
+      <!-- Status Section -->
+      <div class="mb-4 flex-none">
+        <!-- タイトルと操作部分を小画面では縦並びに -->
+        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+          <h2 class="text-xl font-semibold">WebRTC Status</h2>
+          <!-- 操作部分も小画面では縦並びに -->
           <div class="flex flex-col sm:flex-row gap-3 sm:items-center">
             <div class="w-full sm:w-auto">
-              <label
-                for="voice-select"
-                class="block sm:inline mr-2 text-sm font-medium"
-                >音声モデル:</label
-              >
-              <select
-                id="voice-select"
-                class="w-full sm:w-auto rounded border-gray-300 px-3 py-1.5 text-sm"
-                disabled
-              >
-                <option value="alloy">alloy</option>
-                <option value="ash">ash</option>
-                <option value="ballad">ballad</option>
-                <option value="coral">coral</option>
-                <option value="echo">echo</option>
-                <option value="fable">fable</option>
-                <option value="onyx">onyx</option>
-                <option value="nova">nova</option>
-                <option value="sage">sage</option>
-                <option value="shimmer">shimmer</option>
-                <option value="verse" selected>verse</option>
+              <label for="model-select" class="block sm:inline mr-2 text-sm font-medium">モデル:</label>
+              <select id="model-select" class="w-full sm:w-auto rounded border-gray-300 px-3 py-1.5 text-sm">
+                <option value="gpt-4o-realtime-preview-2024-12-17">
+                  gpt-4o-realtime-preview-2024-12-17
+                </option>
+                <option value="gpt-4o-mini-realtime-preview-2024-12-17">
+                  gpt-4o-mini-realtime-preview-2024-12-17
+                </option>
               </select>
             </div>
+            <div class="flex gap-2">
+              <button id="connect-button"
+                class="flex-1 sm:flex-none bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-md">
+                Connect
+              </button>
+              <button id="disconnect-button"
+                class="flex-1 sm:flex-none bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-md disabled:opacity-50 disabled:cursor-not-allowed"
+                disabled>
+                Disconnect
+              </button>
+            </div>
           </div>
         </div>
-
-        <!-- 指示文入力セクション -->
-        <div class="mb-4 flex-none">
-          <div class="w-full">
-            <label
-              for="instructions-input"
-              class="block text-sm font-medium mb-1"
-              >指示文 (Instructions):</label
-            >
-            <textarea
-              id="instructions-input"
-              rows="3"
-              class="w-full rounded border-gray-300 px-3 py-2 text-sm"
-              placeholder="モデルへの指示を入力してください（例: 簡潔に応答する、友好的に話す、日本語で応答するなど）"
-              disabled
-            ></textarea>
-            <p class="text-xs text-gray-500 mt-1">
-              モデルの応答スタイルや内容をガイドする指示文です。空白にするとデフォルト設定に戻ります。
-            </p>
-          </div>
-          <div class="flex justify-end mt-2">
-            <button
-              id="update-session-button"
-              class="bg-purple-500 hover:bg-purple-600 text-white px-4 py-2 rounded-md disabled:opacity-50 disabled:cursor-not-allowed"
-              disabled
-            >
-              Update Session
-            </button>
-            <p id="update-status" class="text-sm hidden ml-2 self-center">
-              Updating session...
-            </p>
-          </div>
-        </div>
-
-        <!-- 応答モダリティ選択セクション (シンプル化) -->
-        <div class="mb-4 flex-none p-3 bg-gray-50 rounded-lg border border-gray-200">
-          <p class="text-sm font-medium mb-2">応答形式の選択:</p>
-          <div class="flex items-center">
-            <input
-              id="audio-checkbox"
-              type="checkbox"
-              class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-              checked
-              disabled
-            />
-            <label for="audio-checkbox" class="ml-2 text-sm">音声応答を有効にする</label>
-          </div>
-          <p class="text-xs text-gray-500 mt-1">
-            テキスト応答は常に有効です。音声応答のオン/オフを選択できます。
+        <div class="mt-2">
+          <p id="status" class="status-disconnected">Disconnected</p>
+          <p id="data-channel-status" class="data-channel-not-ready">
+            Data Channel: Not Ready
           </p>
         </div>
+      </div>
 
-        <div
-          id="error-container"
-          class="bg-red-50 border border-red-200 rounded-md p-4 mb-4 flex-none hidden"
-        >
-          <p id="error-message" class="text-red-600"></p>
-        </div>
-
-        <!-- Main Content Area - using CSS Grid -->
-        <div class="flex-grow grid grid-cols-1 md:grid-cols-3 gap-4 min-h-0">
-          <!-- Left Side: Data Channel -->
-          <div class="flex flex-col min-h-0">
-            <h2 class="text-xl font-semibold mb-2 flex-none">Data Channel</h2>
-            <div
-              id="messages-container"
-              class="border rounded-lg p-4 bg-gray-50 flex-grow overflow-y-auto"
-            >
-              <!-- Messages will be dynamically inserted here -->
-              <div id="messages-end"></div>
-            </div>
-          </div>
-
-          <!-- Middle: Response Text (新規追加) -->
-          <div class="flex flex-col min-h-0">
-            <h2 class="text-xl font-semibold mb-2 flex-none">Response Text</h2>
-            <div
-              id="response-text-container"
-              class="border rounded-lg p-4 bg-green-50 flex-grow overflow-y-auto"
-            >
-              <!-- Response text will be dynamically inserted here -->
-              <p id="response-text-content" class="text-green-800 whitespace-pre-wrap break-words"></p>
-              <div id="response-text-end"></div>
-            </div>
-          </div>
-
-          <!-- Right Side: Voice Transcripts -->
-          <div class="flex flex-col min-h-0">
-            <h2 class="text-xl font-semibold mb-2 flex-none">
-              Voice Transcripts
-            </h2>
-            <div
-              id="transcripts-container"
-              class="border rounded-lg p-4 bg-purple-50 flex-grow overflow-y-auto"
-            >
-              <!-- Transcripts will be dynamically inserted here -->
-              <div id="transcripts-end"></div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Input Section -->
-        <div class="mt-4 flex-none">
-          <div class="flex gap-2">
-            <input
-              type="text"
-              id="message-input"
-              placeholder="Type a message..."
-              class="flex-1 border rounded-md px-4 py-2"
-              disabled
-            />
-            <button
-              id="send-button"
-              class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md disabled:opacity-50 disabled:cursor-not-allowed"
-              disabled
-            >
-              Send
-            </button>
-          </div>
-        </div>
-
-        <!-- Debug Log -->
-        <div class="mt-4 flex-none">
-          <h3 class="text-lg font-semibold mb-2">Debug Log</h3>
-          <div
-            id="debug-log-container"
-            class="bg-gray-100 p-4 rounded-md h-32 overflow-y-auto"
-          >
-            <!-- Debug logs will be dynamically inserted here -->
-            <div id="debug-log-end"></div>
+      <!-- 音声モデル選択セクション -->
+      <div class="mb-4 flex-none">
+        <div class="flex flex-col sm:flex-row gap-3 sm:items-center">
+          <div class="w-full sm:w-auto">
+            <label for="voice-select" class="block sm:inline mr-2 text-sm font-medium">音声モデル:</label>
+            <select id="voice-select" class="w-full sm:w-auto rounded border-gray-300 px-3 py-1.5 text-sm" disabled>
+              <option value="alloy">alloy</option>
+              <option value="ash">ash</option>
+              <option value="ballad">ballad</option>
+              <option value="coral">coral</option>
+              <option value="echo">echo</option>
+              <option value="fable">fable</option>
+              <option value="onyx">onyx</option>
+              <option value="nova">nova</option>
+              <option value="sage">sage</option>
+              <option value="shimmer">shimmer</option>
+              <option value="verse" selected>verse</option>
+            </select>
           </div>
         </div>
       </div>
+
+      <!-- 指示文入力セクション -->
+      <div class="mb-4 flex-none">
+        <div class="w-full">
+          <label for="instructions-input" class="block text-sm font-medium mb-1">指示文 (Instructions):</label>
+          <textarea id="instructions-input" rows="3" class="w-full rounded border-gray-300 px-3 py-2 text-sm"
+            placeholder="モデルへの指示を入力してください（例: 簡潔に応答する、友好的に話す、日本語で応答するなど）" disabled></textarea>
+          <p class="text-xs text-gray-500 mt-1">
+            モデルの応答スタイルや内容をガイドする指示文です。空白にするとデフォルト設定に戻ります。
+          </p>
+        </div>
+        <div class="flex justify-end mt-2">
+          <button id="update-session-button"
+            class="bg-purple-500 hover:bg-purple-600 text-white px-4 py-2 rounded-md disabled:opacity-50 disabled:cursor-not-allowed"
+            disabled>
+            Update Session
+          </button>
+          <p id="update-status" class="text-sm hidden ml-2 self-center">
+            Updating session...
+          </p>
+        </div>
+      </div>
+
+      <!-- 応答モダリティ選択セクション (シンプル化) -->
+      <div class="mb-4 flex-none p-3 bg-gray-50 rounded-lg border border-gray-200">
+        <p class="text-sm font-medium mb-2">応答形式の選択:</p>
+        <div class="flex items-center">
+          <input id="audio-checkbox" type="checkbox"
+            class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500" checked disabled />
+          <label for="audio-checkbox" class="ml-2 text-sm">音声応答を有効にする</label>
+        </div>
+        <p class="text-xs text-gray-500 mt-1">
+          テキスト応答は常に有効です。音声応答のオン/オフを選択できます。
+        </p>
+      </div>
+
+      <div id="error-container" class="bg-red-50 border border-red-200 rounded-md p-4 mb-4 flex-none hidden">
+        <p id="error-message" class="text-red-600"></p>
+      </div>
+
+      <!-- Main Content Area - using CSS Grid -->
+      <div class="flex-grow grid grid-cols-1 md:grid-cols-3 gap-4 min-h-0">
+        <!-- Left Side: Data Channel -->
+        <div class="flex flex-col min-h-0">
+          <h2 class="text-xl font-semibold mb-2 flex-none">Data Channel</h2>
+          <div id="messages-container" class="border rounded-lg p-4 bg-gray-50 flex-grow overflow-y-auto">
+            <!-- Messages will be dynamically inserted here -->
+            <div id="messages-end"></div>
+          </div>
+        </div>
+
+        <!-- Middle: Response Text (新規追加) -->
+        <div class="flex flex-col min-h-0">
+          <h2 class="text-xl font-semibold mb-2 flex-none">Response Text</h2>
+          <div id="response-text-container" class="border rounded-lg p-4 bg-green-50 flex-grow overflow-y-auto">
+            <!-- Response text will be dynamically inserted here -->
+            <p id="response-text-content" class="text-green-800 whitespace-pre-wrap break-words"></p>
+            <div id="response-text-end"></div>
+          </div>
+        </div>
+
+        <!-- Right Side: Voice Transcripts -->
+        <div class="flex flex-col min-h-0">
+          <h2 class="text-xl font-semibold mb-2 flex-none">
+            Voice Transcripts
+          </h2>
+          <div id="transcripts-container" class="border rounded-lg p-4 bg-purple-50 flex-grow overflow-y-auto">
+            <!-- Transcripts will be dynamically inserted here -->
+            <div id="transcripts-end"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Input Section -->
+      <div class="mt-4 flex-none">
+        <div class="flex gap-2">
+          <input type="text" id="message-input" placeholder="Type a message..."
+            class="flex-1 border rounded-md px-4 py-2" disabled />
+          <button id="send-button"
+            class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md disabled:opacity-50 disabled:cursor-not-allowed"
+            disabled>
+            Send
+          </button>
+        </div>
+      </div>
+
+      <!-- Debug Log -->
+      <div class="mt-4 flex-none">
+        <h3 class="text-lg font-semibold mb-2">Debug Log</h3>
+        <div id="debug-log-container" class="bg-gray-100 p-4 rounded-md h-32 overflow-y-auto">
+          <!-- Debug logs will be dynamically inserted here -->
+          <div id="debug-log-end"></div>
+        </div>
+      </div>
     </div>
+  </div>
 
-    <!-- Load CSRF token for Django -->
-    <script>
-      const CSRF_TOKEN = "{{ csrf_token }}";
-    </script>
+  <!-- Load CSRF token for Django -->
+  <script>
+    const CSRF_TOKEN = "{{ csrf_token }}";
+  </script>
 
-    <!-- Load main script - モジュール化したファイルを読み込み -->
-    <script src="{% static 'translator/js/webrtc-client.js' %}"></script>
-    <script src="{% static 'translator/js/webrtc-api.js' %}"></script>
-    <script src="{% static 'translator/js/webrtc-core.js' %}"></script>
-    <script src="{% static 'translator/js/webrtc-main.js' %}"></script>
-  </body>
+  <!-- Load main script - モジュール化したファイルを読み込み -->
+  <script src="{% static 'translator/js/webrtc-client.js' %}"></script>
+  <script src="{% static 'translator/js/webrtc-api.js' %}"></script>
+  <script src="{% static 'translator/js/webrtc-core.js' %}"></script>
+  <script src="{% static 'translator/js/webrtc-main.js' %}"></script>
+</body>
+
 </html>
 <!-- vim: set filetype=htmldjango: -->

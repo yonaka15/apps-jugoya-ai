@@ -1,11 +1,13 @@
 // API通信関連の関数
 
 // OpenAIのセッショントークンを取得する
-async function getSessionToken(model) {
+async function getSessionToken(model, voice) {
   try {
     addDebugLog(`Requesting session token for model: ${model}...`);
     const tokenResponse = await fetch(
-      `/translator/api/session/?model=${encodeURIComponent(model)}`
+      `/translator/api/session/?model=${encodeURIComponent(
+        model
+      )}&voice=${encodeURIComponent(voice)}`
     );
 
     if (!tokenResponse.ok) {
@@ -111,22 +113,30 @@ function formatResponseRequest(
  * @param {Array<string>} modalities - モダリティの配列（オプション）
  * @return {object} フォーマットされたセッション更新リクエストオブジェクト
  * */
-function formatSessionUpdateRequest(voice, instructions = undefined, modalities = undefined) {
+function formatSessionUpdateRequest(
+  voice,
+  instructions = undefined,
+  modalities = undefined
+) {
   // セッション更新オブジェクトの初期化
   const session = {
     voice,
   };
-  
+
   // 指示文がある場合は追加
   if (instructions !== undefined) {
     session.instructions = instructions;
   }
-  
+
   // モダリティが指定されている場合は追加
-  if (modalities !== undefined && Array.isArray(modalities) && modalities.length > 0) {
+  if (
+    modalities !== undefined &&
+    Array.isArray(modalities) &&
+    modalities.length > 0
+  ) {
     session.modalities = modalities;
   }
-  
+
   return {
     type: "session.update",
     session,

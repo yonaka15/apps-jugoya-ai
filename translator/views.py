@@ -42,6 +42,26 @@ def session(request):
             json={
                 "model": model,
                 "voice": voice,  # alloy, ash, ballad, coral, echo, fable, onyx, nova, sage, shimmer, verse
+                # "instructions": "Please respond in Japanese.",
+                # "tools": [
+                #     {
+                #         "type": "function",
+                #         "name": "get_weather",
+                #         "description": "Get current temperature for a given location.",
+                #         "parameters": {
+                #             "type": "object",
+                #             "properties": {
+                #                 "location": {
+                #                     "type": "string",
+                #                     "description": "City and country e.g. Bogotá, Colombia",
+                #                 }
+                #             },
+                #             "required": ["location"],
+                #             "additionalProperties": False,
+                #         },
+                #     }
+                # ],
+                "modalities": ["text"], # ["audio", "text"] or ["text"]
             },
         )
 
