@@ -76,6 +76,7 @@ INSTALLED_APPS = [
     "openai_rtc.apps.OpenAIRtcConfig",
     "translator.apps.TranslatorConfig",
     "subtitle.apps.SubtitleConfig",
+    "keizokuryoku.apps.KeizokuryokuConfig",
 ]
 
 MIDDLEWARE = [
