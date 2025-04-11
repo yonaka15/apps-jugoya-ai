@@ -77,6 +77,7 @@ INSTALLED_APPS = [
     "translator.apps.TranslatorConfig",
     "subtitle.apps.SubtitleConfig",
     "keizokuryoku.apps.KeizokuryokuConfig",
+    "facemesh.apps.FacemeshConfig",
 ]
 
 MIDDLEWARE = [

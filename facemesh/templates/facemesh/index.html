@@ -1,0 +1,177 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TensorFlow.js Face Mesh デモ</title>
+  <link rel="stylesheet" href="{% static 'tailwindcss/css/output.css' %}" />
+  <style>
+    /* TailwindCSSで実現が難しい一部のスタイルのみ残しています */
+    video {
+      transform: scaleX(-1);
+      display: none;
+    }
+
+  </style>
+</head>
+
+<body class="m-0 p-0 font-sans bg-gray-100 flex flex-col items-center">
+  <h1 class="text-blue-500 text-2xl font-bold my-5">TensorFlow.js Face Mesh デモ</h1>
+
+  <div class="relative mx-auto my-3">
+    <video id="video" playsinline></video>
+    <canvas id="output" class="border border-gray-300 rounded-lg shadow-md"></canvas>
+    <div id="fps" class="absolute top-3 left-3 bg-black bg-opacity-50 text-white p-1 rounded text-sm">FPS: 0</div>
+    <div id="loading"
+      class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-white bg-black bg-opacity-70 p-5 rounded-lg text-center">
+      モデルを読み込み中...</div>
+  </div>
+
+  <div class="flex space-x-4 mt-4">
+    <button id="toggleBackground"
+      class="bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded-lg transition duration-300 focus:outline-none focus:ring-2 focus:ring-blue-300">
+      背景非表示
+    </button>
+  </div>
+
+  <!-- TensorFlow.js -->
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-core"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-converter"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-backend-webgl"></script>
+
+  <!-- Face Landmarks Detection -->
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/face-landmarks-detection"></script>
+
+  <script>
+    let video, canvas, ctx, model, detector;
+    let lastFrameTime = 0;
+    const videoWidth = 640;
+    const videoHeight = 480;
+    let showBackground = true; // 背景表示の状態を管理
+
+    // 背景表示切り替えボタンの設定
+    const toggleBackgroundBtn = document.getElementById('toggleBackground');
+    toggleBackgroundBtn.addEventListener('click', () => {
+      showBackground = !showBackground;
+      toggleBackgroundBtn.textContent = showBackground ? '背景非表示' : '背景表示';
+    });
+
+    async function setupCamera() {
+      video = document.getElementById("video");
+      const stream = await navigator.mediaDevices.getUserMedia({
+        audio: false,
+        video: {
+          facingMode: "user",
+          width: videoWidth,
+          height: videoHeight,
+        },
+      });
+      video.srcObject = stream;
+
+      return new Promise((resolve) => {
+        video.onloadedmetadata = () => {
+          resolve(video);
+        };
+      });
+    }
+
+    async function renderPrediction() {
+      const predictions = await detector.estimateFaces(video);
+
+      const beginTime = performance.now();
+
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      // 背景の描画（showBackgroundの値によって描画するかどうかを決定）
+      if (showBackground) {
+        ctx.save();
+        ctx.scale(-1, 1);
+        ctx.translate(-canvas.width, 0);
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+        ctx.restore();
+      } else {
+        // 背景が非表示の場合は黒または別の色で塗りつぶす
+        ctx.fillStyle = '#000000';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+      }
+
+      if (predictions.length > 0) {
+        predictions.forEach((prediction) => {
+          const keypoints = prediction.keypoints;
+
+          // 顔のメッシュを描画
+          ctx.fillStyle = "#32EEDB";
+          ctx.strokeStyle = "#32EEDB";
+          ctx.lineWidth = 0.5;
+
+          for (let i = 0; i < keypoints.length; i++) {
+            const x = canvas.width - keypoints[i].x;
+            const y = keypoints[i].y;
+
+            ctx.beginPath();
+            ctx.arc(x, y, 1, 0, 2 * Math.PI);
+            ctx.fill();
+          }
+        });
+      }
+
+      // FPSの計算と表示
+      const endTime = performance.now();
+      if (lastFrameTime) {
+        const fps = Math.round(1000 / (endTime - lastFrameTime));
+        document.getElementById("fps").textContent = `FPS: ${fps}`;
+      }
+      lastFrameTime = endTime;
+
+      requestAnimationFrame(renderPrediction);
+    }
+
+    async function main() {
+      try {
+        // TensorFlow.jsバックエンドの設定
+        await tf.setBackend("webgl");
+
+        // カメラのセットアップ
+        await setupCamera();
+        video.play();
+
+        // キャンバスの設定
+        canvas = document.getElementById("output");
+        canvas.width = videoWidth;
+        canvas.height = videoHeight;
+        ctx = canvas.getContext("2d");
+
+        // モデルの読み込み
+        model = faceLandmarksDetection.SupportedModels.MediaPipeFaceMesh;
+        const detectorConfig = {
+          runtime: "mediapipe",
+          solutionPath: "https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh",
+          refineLandmarks: true,
+          maxFaces: 1,
+        };
+
+        detector = await faceLandmarksDetection.createDetector(
+          model,
+          detectorConfig
+        );
+
+        document.getElementById("loading").style.display = "none";
+
+        renderPrediction();
+      } catch (error) {
+        console.error("Error:", error);
+        document.getElementById(
+          "loading"
+        ).textContent = `エラー: ${error.message}`;
+      }
+    }
+
+    window.onload = main;
+  </script>
+</body>
+
+</html>
+<!-- vim: set ft=htmldjango: -->

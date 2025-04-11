@@ -11,5 +11,6 @@ urlpatterns = [
     path("translator/", include("translator.urls")),
     path("subtitle/", include("subtitle.urls")),
     path("keizokuryoku/", include("keizokuryoku.urls")),
+    path("facemesh/", include("facemesh.urls")),
     path("admin/", admin.site.urls),
 ]
